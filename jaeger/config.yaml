@@ -1,0 +1,35 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch:
+  attributes/traces:
+    actions:
+      - key: http.request_time
+        action: convert
+        converted_type: double
+
+exporters:
+  jaeger_storage_exporter:
+    trace_storage: some_storage
+
+extensions:
+  jaeger_query:
+    storage:
+      traces: some_storage
+  jaeger_storage:
+    backends:
+      some_storage:
+        memory:
+          max_traces: 100000
+
+service:
+  extensions: [jaeger_storage, jaeger_query]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, attributes/traces]
+      exporters: [jaeger_storage_exporter]

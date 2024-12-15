@@ -1,0 +1,27 @@
+services:
+  jaeger:
+    image: jaegertracing/jaeger
+    volumes:
+      - ./jaeger/config.yaml:/etc/jaeger/config.yaml
+    command: ["--config", "/etc/jaeger/config.yaml"]
+    environment:
+      - LOG_LEVEL=debug
+    ports:
+      - "16686:16686" # UI
+      - "4317:4317" # OTLP gRPC receiver
+    networks:
+      - nginx
+
+  nginx:
+    build: ./nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+    networks:
+      - nginx
+    depends_on:
+      - jaeger
+
+networks:
+  nginx:
